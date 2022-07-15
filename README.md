@@ -1,18 +1,18 @@
-[CI-Badge]: https://github.com/gaelrenoux/tranzactio/actions/workflows/ci.yml/badge.svg
-[CI-Link]: https://github.com/gaelrenoux/tranzactio/actions?query=branch%3Amaster
-[SonatypeReleases-Link]: https://oss.sonatype.org/content/repositories/releases/io/github/gaelrenoux/tranzactio_2.13/
-[SonatypeReleases-Badge]: https://img.shields.io/nexus/r/https/oss.sonatype.org/io.github.gaelrenoux/tranzactio_2.13.svg
+[CI-Badge]: https://github.com/narma/tranzactio/actions/workflows/ci.yml/badge.svg
+[CI-Link]: https://github.com/narma/tranzactio/actions?query=branch%3Amaster
+[SonatypeReleases-Link]: https://s01.oss.sonatype.org/content/repositories/releases/st/alzo/tranzactio_3/
+[SonatypeReleases-Badge]: https://img.shields.io/nexus/r/https/s01.oss.sonatype.org/st.alzo/tranzactio_3.svg
 
 # TranzactIO
 
 [![CI][CI-Badge]][CI-Link]
 [![Releases][SonatypeReleases-Badge]][SonatypeReleases-Link]
 
+It's fork from https://github.com/gaelrenoux/tranzactio to focus only for doobie and with scala 3 support.
 
-TranzactIO is a ZIO wrapper for some Scala database access libraries (Doobie and Anorm, for now).
+TranzactIO is a ZIO wrapper for Doobie.
 
 If the library comes with an IO monad (like Doobie's `ConnectionIO`), it lifts it into a `ZIO[Connection, E, A]`.
-If the library doesn't have an IO monad to start with (like Anorm), it provides a `ZIO[Connection, E, A]` for the role.
 
 Note that `Connection` is **not** Java's `java.sql.Connection`, it's a TranzactIO type.
 
@@ -45,7 +45,7 @@ That's where TranzactIO comes from. I wanted a way to use ZIO everywhere, and ru
 
 TranzactIO is available on the Sonatype Central Repository (see the Nexus badge on top of this README to get the version number). In your build.sbt:
 ```sbt
-libraryDependencies += "io.github.gaelrenoux" %% "tranzactio" % TranzactIOVersion
+libraryDependencies += "st.alzo" %% "tranzactio" % TranzactIOVersion
 ```
 
 In addition, you will need to declare the database access library you are using. For instance, with Doobie:
@@ -64,7 +64,6 @@ The second one is specific to the DB-library you are using.
 The names of most entities are the same for each DB-library: for instance, you'll always have the `tzio` function, or the `Connection` and `Database` classes.
 The package is always named after the DB-library it is used with, e.g.:
 - `io.github.gaelrenoux.tranzactio.doobie._`
-- `io.github.gaelrenoux.tranzactio.anorm._`
 
 
 
@@ -87,29 +86,11 @@ val list: ZIO[Connection, DbException, List[String]] = tzio {
 ```
 
 
-#### Anorm
-
-Since Anorm doesn't provide an IO monad (or even a specific query type), `tzio` will provide the JDBC connection you need to run a query. The operation will be wrapped in a ZIO (as a blocking effect).
-
-```scala
-import zio._
-import anorm._
-import io.github.gaelrenoux.tranzactio._
-import io.github.gaelrenoux.tranzactio.anorm._
-
-val list: ZIO[Connection, DbException, List[String]] = tzio { implicit c =>
-    SQL"SELECT name FROM users".as(SqlParser.str(1).*)
-}
-```
-
-
-
 ### Running the transaction (or using auto-commit)
 
 The `Database` module (from the same package as `tzio`) contains the methods needed to provide the `Connection` and run the transactions.
 
 Here are some examples with Doobie.
-The code for Anorm is identical, except it has a different import: `io.github.gaelrenoux.tranzactio.anorm._` instead of `io.github.gaelrenoux.tranzactio.doobie._`.
 
 ```scala
 import io.github.gaelrenoux.tranzactio._
@@ -155,7 +136,6 @@ Alternatively (e.g. in a test environment), you can create a `DataSource` manual
 
 The layer to build a `Database` from a `javax.sql.DataSource` is on the `Database` object.
 Here's an example for Doobie.
-Again, the code for Anorm is identical, except it has a different import: `io.github.gaelrenoux.tranzactio.anorm._` instead of `io.github.gaelrenoux.tranzactio.doobie._`.
 
 ```scala
 import io.github.gaelrenoux.tranzactio.doobie._
@@ -174,7 +154,6 @@ Find more in `src/main/samples`, or look below for some details.
 
 
 
-
 ## Detailed documentation
 
 ### Version compatibility
@@ -182,24 +161,10 @@ Find more in `src/main/samples`, or look below for some details.
 The table below indicates for each version of TranzactIO, the versions of ZIO or libraries it's been built with.
 Check the backward compatibility information on those libraries to check which versions TranzactIO can support.
 
-| TranzactIO | ZIO          | Doobie       | Anorm        |
-|------------|--------------|--------------|--------------|
-| 0.1.0      | 1.0.0-RC17   | 0.8.6        | -            |
-| 0.2.0      | 1.0.0-RC18-2 | 0.8.6        | -            |
-| 0.3.0      | 1.0.0-RC18-2 | 0.8.6        | 2.6.5        |
-| 0.4.0      | 1.0.0-RC19-2 | 0.9.0        | 2.6.5        |
-| 0.5.0      | 1.0.0-RC20   | 0.9.0        | 2.6.5        |
-| 0.6.0      | 1.0.0-RC21-1 | 0.9.0        | 2.6.5        |
-| 1.0.0      | 1.0.0        | 0.9.0        | 2.6.7        |
-| 1.0.1      | 1.0.0        | 0.9.0        | 2.6.7        |
-| 1.1.0      | 1.0.3        | 0.9.2        | 2.6.7        |
-| 1.2.0      | 1.0.3        | 0.9.2        | 2.6.7        |
-| 1.3.0      | 1.0.5        | 0.9.4        | 2.6.10       |
-| 2.0.0      | 1.0.5        | 0.12.1       | 2.6.10       |
-| 2.1.0      | 1.0.9        | 0.13.4       | 2.6.10       |
-| 3.0.0      | 1.0.11       | 1.0.0        | 2.6.10       |
-| 4.0.0      | 2.0.0        | 1.0.0        | 2.6.10       |
-| master     | 2.0.0        | 1.0.0        | 2.6.10       |
+| TranzactIO | ZIO          | Doobie       |
+|------------|--------------|--------------|
+| 4.0.1      | 2.0.0        | 1.0.0        |
+| master     | 2.0.0        | 1.0.0        |
 
 
 
@@ -378,15 +343,3 @@ val testing: ZIO[Clock, Any, List[String]] = testEffect.provideLayer(Database.no
 Happens quite a lot when using ZIO, because Any is used to mark an 'empty' environment.
 The best thing to do is to drop this warning from your configuration.
 See https://github.com/zio/zio/pull/6455.
-
-
-
-### When will tranzactio work with <insert DB library here>?
-
-I want to add wrappers around more database access libraries.
-Anorm was the second one I did, next should probably be Quill (based on the popularity of the project on GitHub),
-but I'm completely unfamiliar with it.
-
-Slick, however, is a problem. I know it quite well, tried to implement a TranzactIO module for it, and couldn't.
-Transactions cannot be handled externally using Slick.
-I don't think it's doable until this ticket is done: https://github.com/slick/slick/issues/1563
