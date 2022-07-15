@@ -1,9 +1,24 @@
 import sbt.Keys._
 
-organization := "io.github.gaelrenoux"
 name := "tranzactio"
-licenses := Seq("APL2" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt"))
-description := "ZIO wrapper for Doobie"
+
+inThisBuild(
+  List(
+    organization := "st.alzo",
+    scalaVersion := "2.13.8",
+    description := "ZIO wrapper for Doobie",
+    licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
+    developers   := List(
+      Developer("gaelrenoux", "Gaël Renoux", "gael.renoux@gmail.com", url("https://github.com/gaelrenoux")),
+      Developer("alzo", "Sergey Rublev", "alzo@alzo.space", url("https://github.com/narma/"))
+    ),
+    scmInfo      := Some(ScmInfo(url("https://github.com/narma/tranzactio"), "git@github.com:narma/tranzactio.git")),
+    homepage     := Some(url("https://github.com/narma/tranzactio")),
+    sonatypeCredentialHost := "s01.oss.sonatype.org"
+  )
+)
+
+
 
 val scala213Version = "2.13.8"
 val scala3Version = "3.1.3"
@@ -11,15 +26,6 @@ val supportedScalaVersions = List(scala213Version, scala3Version)
 
 scalaVersion := scala3Version
 crossScalaVersions := supportedScalaVersions
-
-
-
-// Publishing information
-
-import xerial.sbt.Sonatype._
-
-sonatypeProjectHosting := Some(GitHubHosting("gaelrenoux", "tranzactio", "gael.renoux@gmail.com"))
-publishTo := sonatypePublishTo.value
 
 val commonScalacOptions = Seq(
  "-encoding", "utf-8", // Specify character encoding used by source files.

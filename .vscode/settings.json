@@ -1,0 +1,13 @@
+{
+    "files.watcherExclude": {
+        "**/target": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        ".bsp/": true,
+        ".idea/": true,
+        ".metals/": true,
+        ".bloop/": true,
+        "target/": true
+      }
+}
