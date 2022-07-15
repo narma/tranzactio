@@ -1,6 +1,5 @@
 package io.github.gaelrenoux.tranzactio
 
-
 import zio.{Tag, ZIO, ZLayer, Trace}
 
 import java.sql.{Connection => JdbcConnection}
@@ -16,7 +15,7 @@ abstract class DatabaseModuleBase[Connection, Database <: DatabaseOps.ServiceOps
       zio: => ZIO[Connection with R, E, A],
       commitOnFailure: => Boolean = false
   )(implicit errorStrategies: ErrorStrategiesRef = ErrorStrategies.Parent, trace: Trace): ZIO[Database with R, Either[DbException, E], A] = {
-    ZIO.serviceWithZIO { db: Database =>
+    ZIO.serviceWithZIO[Database] { (db: Database) =>
       db.transaction[R, E, A](zio, commitOnFailure)
     }
   }
@@ -24,7 +23,7 @@ abstract class DatabaseModuleBase[Connection, Database <: DatabaseOps.ServiceOps
   override def autoCommit[R, E, A](
       zio: => ZIO[Connection with R, E, A]
   )(implicit errorStrategies: ErrorStrategiesRef = ErrorStrategies.Parent, trace: Trace): ZIO[Database with R, Either[DbException, E], A] = {
-    ZIO.serviceWithZIO { db: Database =>
+    ZIO.serviceWithZIO[Database] { (db: Database) =>
       db.autoCommit[R, E, A](zio)
     }
   }

@@ -12,8 +12,7 @@ object SamplesSpec extends ZIOSpecDefault {
   override def spec: MySpec =
     suite("SamplesSpec")(
       testApp("Doobie", doobie.LayeredApp),
-      testApp("Doobie-Streaming", doobie.LayeredAppStreaming),
-      testApp("Anorm", anorm.LayeredApp)
+      testApp("Doobie-Streaming", doobie.LayeredAppStreaming)
     )
 
   private def testApp(name: String, app: ZIOAppDefault): MySpec =

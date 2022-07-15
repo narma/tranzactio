@@ -1,33 +1,42 @@
 import sbt.Keys._
 
-organization := "io.github.gaelrenoux"
 name := "tranzactio"
-licenses := Seq("APL2" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt"))
-description := "ZIO wrapper for Scala DB libraries (e.g. Doobie)"
 
-val scala212Version = "2.12.15"
+inThisBuild(
+  List(
+    organization := "st.alzo",
+    scalaVersion := "2.13.8",
+    description := "ZIO wrapper for Doobie",
+    licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
+    developers   := List(
+      Developer("gaelrenoux", "Gaël Renoux", "gael.renoux@gmail.com", url("https://github.com/gaelrenoux")),
+      Developer("alzo", "Sergey Rublev", "alzo@alzo.space", url("https://github.com/narma/"))
+    ),
+    scmInfo      := Some(ScmInfo(url("https://github.com/narma/tranzactio"), "git@github.com:narma/tranzactio.git")),
+    homepage     := Some(url("https://github.com/narma/tranzactio")),
+    sonatypeCredentialHost := "s01.oss.sonatype.org"
+  )
+)
+
+
+
 val scala213Version = "2.13.8"
-val supportedScalaVersions = List(scala212Version, scala213Version)
+val scala3Version = "3.1.3"
+val supportedScalaVersions = List(scala213Version, scala3Version)
 
-scalaVersion := scala213Version
+scalaVersion := scala3Version
 crossScalaVersions := supportedScalaVersions
 
-
-
-// Publishing information
-
-import xerial.sbt.Sonatype._
-
-sonatypeProjectHosting := Some(GitHubHosting("gaelrenoux", "tranzactio", "gael.renoux@gmail.com"))
-publishTo := sonatypePublishTo.value
-
-val allVersionsOption = Seq(
-  "-encoding", "utf-8", // Specify character encoding used by source files.
+val commonScalacOptions = Seq(
+ "-encoding", "utf-8", // Specify character encoding used by source files.
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
-  "-explaintypes", // Explain type errors in more detail.
   "-unchecked", // Enable additional warnings where generated code depends on assumptions.
 
-  "-feature", // Emit warning and location for usages of features that should be imported explicitly.
+  "-feature", // Emit warning and location for usages of features that should be imported explicitly. 
+)
+
+val scala2Options = Seq(
+  "-explaintypes", // Explain type errors in more detail.
   "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
   "-language:higherKinds", // Allow higher-kinded types
   "-language:implicitConversions", // Allow definition of implicit functions called views
@@ -74,33 +83,17 @@ val scala213Options = Seq(
   "-Xlint:valpattern", // Enable pattern checks in val definitions.
 )
 
-val scala212Options = Seq(
-  "-language:experimental.macros", // Allow macro definition (besides implementation and application)
-  "-Ypartial-unification", // Enable partial unification in type constructor inference
-
-  "-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
-  "-Ywarn-dead-code", // Warn when dead code is identified.
-  "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
-  "-Xlint:nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
-  "-Ywarn-nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
-  "-Ywarn-nullary-unit", // Warn when nullary methods return Unit.
-  "-Ywarn-numeric-widen", // Warn when numerics are widened.
-  "-Ywarn-unused:implicits", // Warn if an implicit parameter is unused.
-  "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
-  "-Ywarn-unused:locals", // Warn if a local definition is unused.
-  "-Ywarn-unused:params", // Warn if a value parameter is unused.
-  "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
-  "-Ywarn-unused:privates", // Warn if a private member is unused.
-  "-Ywarn-value-discard", // Warn when non-Unit expression results are unused.
-
-  // "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`. // false positives in 2.12
-  "-Xlint:unsound-match", // Pattern match may not be typesafe.
+val scala3Options = Seq(
+   "-source:3.0-migration",
+    "-rewrite", 
+    "-explain",
+    "-explain-types"
 )
 
-scalacOptions ++= allVersionsOption ++ {
+scalacOptions ++= commonScalacOptions ++ {
   CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 13)) => scala213Options
-    case Some((2, 12)) => scala212Options
+    case Some((2, 13)) => scala2Options ++ scala213Options
+    case Some((3, _)) => scala3Options
     case _ => Nil
   }
 }
@@ -109,7 +102,6 @@ scalacOptions ++= allVersionsOption ++ {
 val ZioVersion = "2.0.0"
 val ZioCatsVersion = "3.3.0"
 val DoobieVersion = "1.0.0-RC2"
-val AnormVersion = "2.6.10"
 val H2Version = "1.4.200"
 
 libraryDependencies ++= Seq(
@@ -120,7 +112,6 @@ libraryDependencies ++= Seq(
 
   /* Doobie */
   "org.tpolecat" %% "doobie-core" % DoobieVersion % "optional",
-  "org.playframework.anorm" %% "anorm" % AnormVersion % "optional",
 
   /* ZIO test */
   "dev.zio" %% "zio-test" % ZioVersion % "test",

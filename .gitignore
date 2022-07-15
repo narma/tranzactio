@@ -16,9 +16,10 @@ project/project/target/
 .lib
 
 # Bloop/Metals/BSP
-.bloop
-.metals
-.bsp
+.bloop/
+.metals/
+.bsp/
+metals.sbt
 
 
 

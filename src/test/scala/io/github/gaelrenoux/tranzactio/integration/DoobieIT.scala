@@ -8,14 +8,14 @@ import samples.Person
 import samples.doobie.PersonQueries
 import zio.test.Assertion._
 import zio.test._
-import zio.{Scope, ZIO, ZLayer}
+import zio.{ZIO, ZLayer}
 
 
 /** Integration tests for Doobie */
 object DoobieIT extends ITSpec {
 
   /** Layer is recreated on each test, to have a different database every time. */
-  def myLayer: ZLayer[Scope, Nothing, Database with PersonQueries] =
+  def myLayer: ZLayer[Any, Nothing, Database with PersonQueries] =
     PersonQueries.live ++ (JdbcLayers.datasourceU >>> ConnectionSource.fromDatasource >>> Database.fromConnectionSource)
 
   val buffy: Person = Person("Buffy", "Summers")
@@ -23,8 +23,8 @@ object DoobieIT extends ITSpec {
 
   val connectionCountQuery: TranzactIO[Int] = tzio(Fragment.const(connectionCountSql).query[Int].unique)
 
-  private def wrap[E, A](z: ZIO[Database with PersonQueries, E, A]): ZIO[Scope, E, A] =
-    z.provideSome(myLayer)
+  private def wrap[E, A](z: ZIO[Database with PersonQueries, E, A]): ZIO[Any, E, A] =
+    z.provide(myLayer)
 
   def spec: MySpec = suite("Doobie Integration Tests")(
     testDataCommittedOnTransactionSuccess,
