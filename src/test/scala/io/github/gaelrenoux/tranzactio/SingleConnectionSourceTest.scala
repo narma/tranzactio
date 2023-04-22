@@ -5,31 +5,25 @@ import zio.test._
 import zio.{test => _, _}
 
 object SingleConnectionSourceTest extends ZIOSpec[TestEnvironment with ConnectionSource] {
-  type Env    = TestEnvironment with ConnectionSource
-  type MySpec = Spec[Env, Any]
 
   implicit private val errorStrategies: ErrorStrategies = ErrorStrategies.Nothing
 
   // TODO add aspect to timeout tests to 5 seconds
 
-  override def bootstrap: ZLayer[Scope, Any, Env] = csLayer ++ testEnvironment
+  override def bootstrap: ZLayer[Any, Any, Environment] = csLayer ++ testEnvironment
 
-  lazy val csLayer: ZLayer[Scope, Nothing, ConnectionSource] =
+  lazy val csLayer: ZLayer[Any, Nothing, ConnectionSource] =
     (JdbcLayers.connectionU ++ testEnvironment) >>> ConnectionSource.fromConnection
 
   val connectionCountSql = "select count(*) from information_schema.sessions"
 
-  def spec: MySpec = suite("Single connection ConnectionSource Tests")(
-    testDisallowConcurrentTasks
-  )
-
-  private val testDisallowConcurrentTasks: Spec[ConnectionSource, Nothing] =
+  def spec = suite("Single connection ConnectionSource Tests")(
     test("disallow concurrent tasks") {
       def query(trace: Ref[List[String]]) =
         trace.update("start" :: _) *> ZIO.sleep(5.second) *> trace.update("end" :: _)
 
       def runParallel(trace: Ref[List[String]]) =
-        ZIO.service[ConnectionSource.Service].flatMap { cSource =>
+        ZIO.service[ConnectionSource].flatMap { cSource =>
           val op1 = cSource.runAutoCommit(_ => query(trace))
           val op2 = cSource.runAutoCommit(_ => query(trace))
           op1
@@ -49,4 +43,6 @@ object SingleConnectionSourceTest extends ZIOSpec[TestEnvironment with Connectio
         result <- trace.get
       } yield assertTrue(result == "end" :: "start" :: "end" :: "start" :: Nil)
     }
+  )
+
 }

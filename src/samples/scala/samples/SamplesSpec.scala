@@ -5,17 +5,16 @@ import zio.{Chunk, Scope, ULayer, ZIOAppArgs, ZIOAppDefault, ZLayer}
 
 /** Run all samples as ZIO tests */
 object SamplesSpec extends ZIOSpecDefault {
-  type MySpec = Spec[TestEnvironment, Any]
 
   private val ignoredAppArgs: ULayer[ZIOAppArgs] = ZLayer.succeed(ZIOAppArgs.apply(Chunk.empty))
 
-  override def spec: MySpec =
+  override def spec =
     suite("SamplesSpec")(
       testApp("Doobie", doobie.LayeredApp),
       testApp("Doobie-Streaming", doobie.LayeredAppStreaming)
     )
 
-  private def testApp(name: String, app: ZIOAppDefault): MySpec =
+  private def testApp(name: String, app: ZIOAppDefault) =
     test(s"$name LayeredApp prints its progress then the trio") {
       for {
         _      <- app.run.provide(ignoredAppArgs ++ Scope.default)
