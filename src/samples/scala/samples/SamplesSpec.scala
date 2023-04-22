@@ -16,18 +16,19 @@ object SamplesSpec extends ZIOSpecDefault {
     )
 
   private def testApp(name: String, app: ZIOAppDefault): MySpec =
-
     test(s"$name LayeredApp prints its progress then the trio") {
       for {
-        _ <- app.run.provide(ignoredAppArgs ++ Scope.default)
+        _      <- app.run.provide(ignoredAppArgs ++ Scope.default)
         output <- TestConsole.output
-      } yield assertTrue(output == Vector(
-        "Starting the app\n",
-        "Creating the table\n",
-        "Inserting the trio\n",
-        "Reading the trio\n",
-        "Buffy Summers, Willow Rosenberg, Alexander Harris\n"
-      ))
+      } yield assertTrue(
+        output == Vector(
+          "Starting the app\n",
+          "Creating the table\n",
+          "Inserting the trio\n",
+          "Reading the trio\n",
+          "Buffy Summers, Willow Rosenberg, Alexander Harris\n"
+        )
+      )
     }
 
 }

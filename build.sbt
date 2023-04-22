@@ -5,7 +5,7 @@ name := "tranzactio"
 inThisBuild(
   List(
     organization := "st.alzo",
-    scalaVersion := "2.13.8",
+    scalaVersion := "2.13.10",
     description := "ZIO wrapper for Doobie",
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
     developers   := List(
@@ -20,8 +20,8 @@ inThisBuild(
 
 
 
-val scala213Version = "2.13.8"
-val scala3Version = "3.1.3"
+val scala213Version = "2.13.10"
+val scala3Version = "3.2.2"
 val supportedScalaVersions = List(scala213Version, scala3Version)
 
 scalaVersion := scala3Version
@@ -99,9 +99,10 @@ scalacOptions ++= commonScalacOptions ++ {
 }
 
 
-val ZioVersion = "2.0.0"
-val ZioCatsVersion = "3.3.0"
+val ZioVersion = "2.0.13"
+val ZioCatsVersion = "23.0.0.4"
 val DoobieVersion = "1.0.0-RC2"
+val izumiReflect = "2.3.2"
 val H2Version = "1.4.200"
 
 libraryDependencies ++= Seq(
@@ -109,6 +110,7 @@ libraryDependencies ++= Seq(
   "dev.zio" %% "zio" % ZioVersion,
   "dev.zio" %% "zio-streams" % ZioVersion,
   "dev.zio" %% "zio-interop-cats" % ZioCatsVersion,
+  "dev.zio" %% "izumi-reflect" % izumiReflect,
 
   /* Doobie */
   "org.tpolecat" %% "doobie-core" % DoobieVersion % "optional",

@@ -2,7 +2,6 @@ package samples
 
 import org.h2.jdbcx.JdbcDataSource
 
-
 import javax.sql.DataSource
 import zio.ZIO
 import zio.ZLayer

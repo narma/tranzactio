@@ -9,6 +9,8 @@ object DbException {
 
   case class Wrapped(cause: Throwable) extends Exception(cause) with DbException
 
-  case class Timeout(duration: Duration) extends Exception(s"Timeout after $duration") with DbException
+  case class Timeout(duration: Duration)
+      extends Exception(s"Timeout after $duration")
+      with DbException
 
 }

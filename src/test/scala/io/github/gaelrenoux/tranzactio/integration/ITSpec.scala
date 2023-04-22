@@ -14,4 +14,3 @@ abstract class ITSpec extends ZIOSpecDefault {
   val connectionCountSql = "select count(*) from information_schema.sessions"
 
 }
-

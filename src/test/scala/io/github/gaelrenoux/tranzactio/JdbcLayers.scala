@@ -11,7 +11,8 @@ import javax.sql.DataSource
 /** All layers are defs, not vals, so that every call (in different tests) will return a different layer, with its own DB. */
 object JdbcLayers {
 
-  /** Generates the DataSource layer.
+  /**
+   * Generates the DataSource layer.
    *
    * The H2 URL is based on an UUID, and the layer is executed for each test, so we have a different UUID on every test.
    *
@@ -22,7 +23,7 @@ object JdbcLayers {
   def datasource: ZLayer[Any, Throwable, DataSource] = ZLayer.fromZIO(
     ZIO.attemptBlocking {
       val uuid = UUID.randomUUID().toString
-      val ds = new JdbcDataSource
+      val ds   = new JdbcDataSource
       ds.setURL(s"jdbc:h2:mem:$uuid;DB_CLOSE_DELAY=10")
       ds.setUser("sa")
       ds.setPassword("sa")

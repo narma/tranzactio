@@ -17,7 +17,10 @@ trait DatabaseOpsCompileTest {
       val a: ZIO[Environment, Either[DbException, String], Int] =
         serviceOperations.transaction(z[Connection with Environment, String])
       val b: ZIO[Environment, Either[DbException, String], Int] =
-        serviceOperations.transaction(z[Connection with Environment, String], commitOnFailure = true)
+        serviceOperations.transaction(
+          z[Connection with Environment, String],
+          commitOnFailure = true
+        )
 
       val c: ZIO[Any, Either[DbException, String], Int] =
         serviceOperations.transaction(z[Connection, String])
@@ -27,20 +30,31 @@ trait DatabaseOpsCompileTest {
 
     object TransactionOrWiden {
       val a: ZIO[Environment, Exception, Int] =
-        serviceOperations.transactionOrWiden(z[Connection with Environment, IllegalArgumentException])
+        serviceOperations.transactionOrWiden(
+          z[Connection with Environment, IllegalArgumentException]
+        )
       val b: ZIO[Environment, DbException, Int] =
         serviceOperations.transactionOrWiden(z[Connection with Environment, DbException])
       val c: ZIO[Environment, Exception, Int] =
-        serviceOperations.transactionOrWiden(z[Connection with Environment, IllegalArgumentException], commitOnFailure = true)
+        serviceOperations.transactionOrWiden(
+          z[Connection with Environment, IllegalArgumentException],
+          commitOnFailure = true
+        )
       val d: ZIO[Environment, DbException, Int] =
-        serviceOperations.transactionOrWiden(z[Connection with Environment, DbException], commitOnFailure = true)
+        serviceOperations.transactionOrWiden(
+          z[Connection with Environment, DbException],
+          commitOnFailure = true
+        )
 
       val e: ZIO[Any, Exception, Int] =
         serviceOperations.transactionOrWiden(z[Connection, IllegalArgumentException])
       val f: ZIO[Any, DbException, Int] =
         serviceOperations.transactionOrWiden(z[Connection, DbException])
       val g: ZIO[Any, Exception, Int] =
-        serviceOperations.transactionOrWiden(z[Connection, IllegalArgumentException], commitOnFailure = true)
+        serviceOperations.transactionOrWiden(
+          z[Connection, IllegalArgumentException],
+          commitOnFailure = true
+        )
       val h: ZIO[Any, DbException, Int] =
         serviceOperations.transactionOrWiden(z[Connection, DbException], commitOnFailure = true)
     }
@@ -49,7 +63,10 @@ trait DatabaseOpsCompileTest {
       val a: ZIO[Environment, String, Int] =
         serviceOperations.transactionOrDie(z[Connection with Environment, String])
       val b: ZIO[Environment, String, Int] =
-        serviceOperations.transactionOrDie(z[Connection with Environment, String], commitOnFailure = true)
+        serviceOperations.transactionOrDie(
+          z[Connection with Environment, String],
+          commitOnFailure = true
+        )
 
       val c: ZIO[Any, String, Int] =
         serviceOperations.transactionOrDie(z[Connection, String])
@@ -67,7 +84,9 @@ trait DatabaseOpsCompileTest {
 
     object AutoCommitOrWiden {
       val a: ZIO[Environment, Exception, Int] =
-        serviceOperations.autoCommitOrWiden(z[Connection with Environment, IllegalArgumentException])
+        serviceOperations.autoCommitOrWiden(
+          z[Connection with Environment, IllegalArgumentException]
+        )
       val b: ZIO[Environment, DbException, Int] =
         serviceOperations.autoCommitOrWiden(z[Connection with Environment, DbException])
 
@@ -87,7 +106,6 @@ trait DatabaseOpsCompileTest {
 
   }
 
-
   val moduleOperations: DatabaseOps.ModuleOps[Connection, DatabaseService]
 
   object ModuleCheck {
@@ -102,7 +120,9 @@ trait DatabaseOpsCompileTest {
 
     object TransactionOrWiden {
       val a: ZIO[Database with Environment, Exception, Int] =
-        moduleOperations.transactionOrWiden(z[Connection with Environment, IllegalArgumentException])
+        moduleOperations.transactionOrWiden(
+          z[Connection with Environment, IllegalArgumentException]
+        )
       val b: ZIO[Database with Environment, DbException, Int] =
         moduleOperations.transactionOrWiden(z[Connection with Environment, DbException])
 

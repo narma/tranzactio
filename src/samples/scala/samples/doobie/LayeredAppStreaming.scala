@@ -11,10 +11,11 @@ import zio.Console
 // scalastyle:off magic.number
 object LayeredAppStreaming extends zio.ZIOAppDefault {
 
-  private val conf = Conf.live("samble-doobie-app-streaming")
+  private val conf           = Conf.live("samble-doobie-app-streaming")
   private val dbRecoveryConf = conf >>> ZLayer.fromFunction((_: Conf).dbRecovery)
-  private val datasource = conf >>> ConnectionPool.live
-  private val database = (datasource ++ dbRecoveryConf) >>> Database.fromDatasourceAndErrorStrategies
+  private val datasource     = conf >>> ConnectionPool.live
+  private val database =
+    (datasource ++ dbRecoveryConf) >>> Database.fromDatasourceAndErrorStrategies
   private val personQueries = PersonQueries.live
 
   type AppEnv = Database with PersonQueries with Conf
@@ -22,9 +23,9 @@ object LayeredAppStreaming extends zio.ZIOAppDefault {
 
   override def run: ZIO[ZIOAppArgs with Scope, Any, Any] =
     for {
-      _ <- Console.printLine("Starting the app")
+      _    <- Console.printLine("Starting the app")
       trio <- myApp().provideLayer(appEnv)
-      _ <- Console.printLine(trio.mkString(", "))
+      _    <- Console.printLine(trio.mkString(", "))
     } yield ExitCode(0)
 
   /** Main code for the application. Results in a big ZIO depending on the AppEnv. */
@@ -39,8 +40,9 @@ object LayeredAppStreaming extends zio.ZIOAppDefault {
       _ <- PersonQueries.insert(Person("Rupert", "Giles")) // insert one more!
       _ <- Console.printLine("Reading the trio").orDie
       trio <- {
-        val stream: ZStream[PersonQueries with Connection, DbException, Person] = PersonQueries.listStream.take(3)
-        stream.run(ZSink.foldLeft(List[Person]()) { (ps, p) => p :: ps })
+        val stream: ZStream[PersonQueries with Connection, DbException, Person] =
+          PersonQueries.listStream.take(3)
+        stream.run(ZSink.foldLeft(List[Person]())((ps, p) => p :: ps))
       }
     } yield trio.reverse
 
