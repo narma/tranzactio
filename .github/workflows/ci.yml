@@ -25,4 +25,4 @@ jobs:
           java-version: 17
           distribution: temurin
       - name: Clean compile and run tests
-        run: sbt clean +test
+        run: sbt clean test

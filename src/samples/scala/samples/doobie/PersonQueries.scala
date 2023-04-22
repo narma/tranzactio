@@ -41,13 +41,12 @@ object PersonQueries {
     }
 
     def insert(p: Person): TranzactIO[Unit] = tzio {
-      sql"""INSERT INTO person (given_name, family_name) VALUES (${p.givenName}, ${p.familyName})"""
-        .update.run.map(_ => ())
+      sql"""INSERT INTO person (given_name, family_name) VALUES (${p.givenName}, ${p.familyName})""".update.run
+        .map(_ => ())
     }
 
     val failing: TranzactIO[Unit] = tzio {
-      sql"""INSERT INTO nonexisting (stuff) VALUES (1)"""
-        .update.run.map(_ => ())
+      sql"""INSERT INTO nonexisting (stuff) VALUES (1)""".update.run.map(_ => ())
     }
   })
 
@@ -64,15 +63,19 @@ object PersonQueries {
     val failing: TranzactIO[Unit] = ZIO.fail(DbException.Wrapped(new RuntimeException))
   })
 
-  def setup: ZIO[PersonQueries with Connection, DbException, Unit] = ZIO.serviceWithZIO[PersonQueries](_.setup)
+  def setup: ZIO[PersonQueries with Connection, DbException, Unit] =
+    ZIO.serviceWithZIO[PersonQueries](_.setup)
 
-  val list: ZIO[PersonQueries with Connection, DbException, List[Person]] = ZIO.serviceWithZIO[PersonQueries](_.list)
+  val list: ZIO[PersonQueries with Connection, DbException, List[Person]] =
+    ZIO.serviceWithZIO[PersonQueries](_.list)
 
-  val listStream: ZStream[PersonQueries with Connection, DbException, Person] = ZStream.serviceWithStream[PersonQueries](_.listStream)
+  val listStream: ZStream[PersonQueries with Connection, DbException, Person] =
+    ZStream.serviceWithStream[PersonQueries](_.listStream)
 
-  def insert(p: Person): ZIO[PersonQueries with Connection, DbException, Unit] = ZIO.serviceWithZIO[PersonQueries](_.insert(p))
+  def insert(p: Person): ZIO[PersonQueries with Connection, DbException, Unit] =
+    ZIO.serviceWithZIO[PersonQueries](_.insert(p))
 
-  val failing: ZIO[PersonQueries with Connection, DbException, Unit] = ZIO.serviceWithZIO[PersonQueries](_.failing)
+  val failing: ZIO[PersonQueries with Connection, DbException, Unit] =
+    ZIO.serviceWithZIO[PersonQueries](_.failing)
 
 }
-

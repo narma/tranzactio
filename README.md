@@ -162,9 +162,9 @@ The table below indicates for each version of TranzactIO, the versions of ZIO or
 Check the backward compatibility information on those libraries to check which versions TranzactIO can support.
 
 | TranzactIO | ZIO          | Doobie       |
-|------------|--------------|--------------|
-| 4.0.1      | 2.0.0        | 1.0.0        |
-| master     | 2.0.0        | 1.0.0        |
+|------------|---------------|--------------|
+| 4.2.0      | 2.0.x         | 1.0.0        |
+| master     | 2.0.x         | 1.0.0        |
 
 
 

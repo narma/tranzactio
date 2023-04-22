@@ -1,10 +1,11 @@
 package io.github.gaelrenoux.tranzactio
 
-
 import zio.{Schedule, ZIO, _}
 
-/** How to handle issues in the various operations of the database. Note that this only applies to the operation
- * performed when handling the connection, and not the execution of the requests! */
+/**
+ * How to handle issues in the various operations of the database. Note that this only applies to the operation
+ * performed when handling the connection, and not the execution of the requests!
+ */
 sealed trait ErrorStrategiesRef {
   def orElse(es: ErrorStrategiesRef): ErrorStrategiesRef
 
@@ -13,7 +14,6 @@ sealed trait ErrorStrategiesRef {
   def ref: ErrorStrategiesRef = this
 }
 
-
 /** Refer to the parent module, up to the default value in Tranzactio (which is Brutal). */
 case object ErrorStrategiesParent extends ErrorStrategiesRef {
   override def orElse(es: ErrorStrategiesRef): ErrorStrategiesRef = es
@@ -21,25 +21,28 @@ case object ErrorStrategiesParent extends ErrorStrategiesRef {
   override val orElseDefault: ErrorStrategies = ErrorStrategies.Nothing
 }
 
-
-/** Contains one ErrorStrategy for each DB operation. Carries a few methods to apply changes to all methods.
+/**
+ * Contains one ErrorStrategy for each DB operation. Carries a few methods to apply changes to all methods.
  * @param openConnection Note that `openConnection` is a special case. Timeouts should '''not''' be handled in ZIO over
  * this method, as that could lead to connection leaks. Therefore, the `timeout` method specifically ignore
  * `openConnection`.
  */
 case class ErrorStrategies(
-    openConnection: ErrorStrategy,
-    setAutoCommit: ErrorStrategy,
-    commitConnection: ErrorStrategy,
-    rollbackConnection: ErrorStrategy,
-    closeConnection: ErrorStrategy
+  openConnection: ErrorStrategy,
+  setAutoCommit: ErrorStrategy,
+  commitConnection: ErrorStrategy,
+  rollbackConnection: ErrorStrategy,
+  closeConnection: ErrorStrategy
 ) extends ErrorStrategiesRef {
 
   override def orElse(es: ErrorStrategiesRef): ErrorStrategies = this
 
   override val orElseDefault: ErrorStrategies = this
 
-  private def all(f: ErrorStrategy => ErrorStrategy, applyToOpenConnection: Boolean = true): ErrorStrategies = ErrorStrategies(
+  private def all(
+    f: ErrorStrategy => ErrorStrategy,
+    applyToOpenConnection: Boolean = true
+  ): ErrorStrategies = ErrorStrategies(
     openConnection = if (applyToOpenConnection) f(openConnection) else openConnection,
     setAutoCommit = f(setAutoCommit),
     commitConnection = f(commitConnection),
@@ -47,7 +50,8 @@ case class ErrorStrategies(
     closeConnection = f(closeConnection)
   )
 
-  /** Adds a timeout on all individual operations (commit, rollback, etc.).
+  /**
+   * Adds a timeout on all individual operations (commit, rollback, etc.).
    *
    * No timeout will be applied to openConnection, as this would cause leaking connections. If for some reason you want
    * a timeout on openConnection, you need to set the ErrorStrategy for openConnection manually.
@@ -58,52 +62,74 @@ case class ErrorStrategies(
   def retry(schedule: Schedule[Any, Any, Any]): ErrorStrategies =
     all(_.retry(schedule))
 
-  def retryCountExponential(count: Int, delay: Duration, factor: Double = 2.0, maxDelay: Duration = Duration.Infinity)
-    (implicit trace: Trace): ErrorStrategies =
+  def retryCountExponential(
+    count: Int,
+    delay: Duration,
+    factor: Double = 2.0,
+    maxDelay: Duration = Duration.Infinity
+  )(implicit trace: Trace): ErrorStrategies =
     all(_.retryCountExponential(count, delay, factor, maxDelay))
 
   def retryCountFixed(count: Int, delay: Duration)(implicit trace: Trace): ErrorStrategies =
     all(_.retryCountFixed(count, delay))
 
-  def retryForeverExponential(delay: Duration, factor: Double = 2.0, maxDelay: Duration = Duration.Infinity)
-    (implicit trace: Trace): ErrorStrategies =
+  def retryForeverExponential(
+    delay: Duration,
+    factor: Double = 2.0,
+    maxDelay: Duration = Duration.Infinity
+  )(implicit trace: Trace): ErrorStrategies =
     all(_.retryForeverExponential(delay, factor, maxDelay))
 
   def retryForeverFixed(delay: Duration)(implicit trace: Trace): ErrorStrategies =
     all(_.retryForeverFixed(delay))
 }
 
-/** The ErrorStrategies companion object is the starting point to define an ErrorStrategies, and therefore is defined as
- * a set of empty strategies (no timeout and no retry). */
-object ErrorStrategies extends ErrorStrategies(ErrorStrategy, ErrorStrategy, ErrorStrategy, ErrorStrategy, ErrorStrategy) {
+/**
+ * The ErrorStrategies companion object is the starting point to define an ErrorStrategies, and therefore is defined as
+ * a set of empty strategies (no timeout and no retry).
+ */
+object ErrorStrategies
+    extends ErrorStrategies(
+      ErrorStrategy,
+      ErrorStrategy,
+      ErrorStrategy,
+      ErrorStrategy,
+      ErrorStrategy
+    ) {
 
   /** Alias for the ErrorStrategies companion object. Can be used for clarity, to mark when you actually want no retry and no timeout. */
   val Nothing: ErrorStrategies = this
 
   /** No concrete strategies. Uses the parent module's strategies. */
-  val Parent: ErrorStrategiesParent.type = ErrorStrategiesParent // Must be defined after Nothing, as ErrorStrategiesParent uses it
+  val Parent: ErrorStrategiesParent.type =
+    ErrorStrategiesParent // Must be defined after Nothing, as ErrorStrategiesParent uses it
 
   /** Implicit ErrorStrategies, to be imported when needed. */
   object Implicits {
     implicit val Parent: ErrorStrategiesParent.type = ErrorStrategies.Parent
-    implicit val Nothing: ErrorStrategies = ErrorStrategies.Nothing
+    implicit val Nothing: ErrorStrategies           = ErrorStrategies.Nothing
   }
 
 }
 
-
-/** An ErrorStrategy defines how to handle one of the DB operations (openConnection, commit, etc.) It is typically
- * created starting from the ErrorStrategy object, then applying timeout and retry. */
+/**
+ * An ErrorStrategy defines how to handle one of the DB operations (openConnection, commit, etc.) It is typically
+ * created starting from the ErrorStrategy object, then applying timeout and retry.
+ */
 trait ErrorStrategy {
   self =>
 
   /** How this ErrorStrategy transforms a DB operation. */
   def apply[R, A](z: => ZIO[R, DbException, A])(implicit trace: Trace): ZIO[R, DbException, A]
 
-  /** Adds a timeout to the current ErrorStrategy. Note that if a retry has already been defined, the timeout is applied
-   * '''after''' the retry. */
+  /**
+   * Adds a timeout to the current ErrorStrategy. Note that if a retry has already been defined, the timeout is applied
+   * '''after''' the retry.
+   */
   def timeout(d: Duration): ErrorStrategy = new ErrorStrategy {
-    override def apply[R, A](z: => ZIO[R, DbException, A])(implicit trace: Trace): ZIO[R, DbException, A] =
+    override def apply[R, A](z: => ZIO[R, DbException, A])(implicit
+      trace: Trace
+    ): ZIO[R, DbException, A] =
       self(z).timeoutFail(DbException.Timeout(d))(d)
   }
 
@@ -113,34 +139,44 @@ trait ErrorStrategy {
       self(z).retry(schedule)
   }
 
-  def retryCountExponential(count: Int, delay: Duration, factor: Double = 2.0, maxDelay: Duration = Duration.Infinity)
-    (implicit trace: Trace): ErrorStrategy = {
-    if (maxDelay == Duration.Infinity) retry(Schedule.recurs(count) && Schedule.exponential(delay, factor))
-    else retry(Schedule.recurs(count) && (Schedule.exponential(delay, factor) || Schedule.spaced(maxDelay)))
-  }
+  def retryCountExponential(
+    count: Int,
+    delay: Duration,
+    factor: Double = 2.0,
+    maxDelay: Duration = Duration.Infinity
+  )(implicit trace: Trace): ErrorStrategy =
+    if (maxDelay == Duration.Infinity)
+      retry(Schedule.recurs(count) && Schedule.exponential(delay, factor))
+    else
+      retry(
+        Schedule.recurs(count) && (Schedule.exponential(delay, factor) || Schedule.spaced(maxDelay))
+      )
 
-  def retryCountFixed(count: Int, delay: Duration)(implicit trace: Trace): ErrorStrategy = {
+  def retryCountFixed(count: Int, delay: Duration)(implicit trace: Trace): ErrorStrategy =
     retry(Schedule.recurs(count) && Schedule.spaced(delay))
-  }
 
-  def retryForeverExponential(delay: Duration, factor: Double = 2.0, maxDelay: Duration = Duration.Infinity)
-    (implicit trace: Trace): ErrorStrategy = {
+  def retryForeverExponential(
+    delay: Duration,
+    factor: Double = 2.0,
+    maxDelay: Duration = Duration.Infinity
+  )(implicit trace: Trace): ErrorStrategy =
     if (maxDelay == Duration.Infinity) retry(Schedule.exponential(delay, factor))
     else retry(Schedule.exponential(delay, factor) || Schedule.spaced(maxDelay))
-  }
 
-  def retryForeverFixed(delay: Duration)(implicit trace: Trace): ErrorStrategy = {
+  def retryForeverFixed(delay: Duration)(implicit trace: Trace): ErrorStrategy =
     retry(Schedule.spaced(delay))
-  }
 }
 
-/** The ErrorStrategy companion object is the starting point to define an ErrorStrategy, and therefore is defined as an
- * empty strategy (no timeout and no retry). */
+/**
+ * The ErrorStrategy companion object is the starting point to define an ErrorStrategy, and therefore is defined as an
+ * empty strategy (no timeout and no retry).
+ */
 object ErrorStrategy extends ErrorStrategy {
 
-  override def apply[R, A](z: => ZIO[R, DbException, A])(implicit trace: Trace): ZIO[R, DbException, A] = z
+  override def apply[R, A](z: => ZIO[R, DbException, A])(implicit
+    trace: Trace
+  ): ZIO[R, DbException, A] = z
 
   /** Alias for the ErrorStrategy companion object. Can be used for clarity, to mark when you actually want no retry and no timeout. */
   val Nothing: ErrorStrategy = this
 }
-
