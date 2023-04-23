@@ -161,10 +161,12 @@ Find more in `src/main/samples`, or look below for some details.
 The table below indicates for each version of TranzactIO, the versions of ZIO or libraries it's been built with.
 Check the backward compatibility information on those libraries to check which versions TranzactIO can support.
 
-| TranzactIO | ZIO          | Doobie       |
-|------------|---------------|--------------|
-| 4.2.0      | 2.0.x         | 1.0.0        |
-| master     | 2.0.x         | 1.0.0        |
+| TranzactIO | ZIO           | Doobie       | Scala        |
+|------------|---------------|--------------|--------------|
+| master     | 2.0.13        | 1.0.0-RC2    | Scala 3 only |
+| 4.2.0      | 2.0.13        | 1.0.0-RC2    | Scala 3 only |
+| 4.0.1      | 2.0.0         | 1.0.0-RC2    | Scala 2 & 3  |
+
 
 
 
